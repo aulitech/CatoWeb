@@ -242,8 +242,6 @@ div.clear {
   /* border-bottom: .25rem solid #fedd68; */
 }
 
-.footer button {}
-
 .remix {
   display: flex;
   justify-content: center;
@@ -265,6 +263,7 @@ div.clear {
   display: inline-block;
   position: relative;
   width: 50px;
+  user-select: none;
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
@@ -541,6 +540,7 @@ div.clear {
   -moz-transition: margin 35ms 35ms linear;
   -o-transition: margin 35ms 35ms linear;
   -webkit-transition: margin 35ms 35ms;
+  transition-delay: linear, 0s;
   -webkit-transition-delay: linear, 0s;
   transition: margin 35ms 35ms linear;
   -ms-transition: margin 35ms 35ms linear;
@@ -552,6 +552,7 @@ div.clear {
   -moz-transition: margin 35ms linear;
   -o-transition: margin 35ms linear;
   -webkit-transition: margin 35ms linear;
+  transition-delay: linear, 0s;
   -webkit-transition-delay: 0s, linear;
   transition: margin 35ms linear;
   -ms-transition: margin 35ms linear;
