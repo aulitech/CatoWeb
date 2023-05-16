@@ -1,72 +1,79 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <title>Adafruit Web Bluetooth Dashboard</title>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <script>
+
+<head>
+  <title>Cato</title>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>
+    /*
+
       // Redirect to HTTPS if HTTP is requested.
       if (window.location.protocol === 'http:') {
         window.location.href = 'https:' + window.location.href.substring(5);
       }
-    </script>
-    <script type="importmap">
+    */
+  </script>
+  <script type="importmap">
         {
             "imports": {
                 "three": "https://threejs.org/build/three.module.js",
                 "gltfloader": "https://threejs.org/examples/jsm/loaders/GLTFLoader.js"
             }
         }
-    </script>    
-    <!-- import Chart.js library via CDN, per Chart.js documentation -->
-    <script src="//cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.bundle.js" defer></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/numeral.js/2.0.6/numeral.min.js" defer></script>
-    <script src="js/colorjoe.min.js" defer></script>
-    <script src="js/scale.fix.js" defer></script>
-    <script src="js/graph.js" defer></script>
+    </script>
+  <!-- import Chart.js library via CDN, per Chart.js documentation -->
+  <script src="//cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.bundle.js" defer></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/numeral.js/2.0.6/numeral.min.js" defer></script>
+  <script src="js/colorjoe.min.js" defer></script>
+  <script src="js/scale.fix.js" defer></script>
+  <script src="js/graph.js" defer></script>
 
-    <!-- import the web page's stylesheets along with the themes -->
-    <link rel="stylesheet" href="https://use.typekit.net/qtk5kiq.css">
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/light.css" id="light" class="alternate" disabled>
-    <link rel="stylesheet" href="css/dark.css"  id="dark"  class="alternate" disabled>
-    <link rel="stylesheet" href="css/colorjoe.css">
+  <!-- import the web page's stylesheets along with the themes -->
+  <link rel="stylesheet" href="https://use.typekit.net/qtk5kiq.css">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/light.css" id="light" class="alternate" disabled>
+  <link rel="stylesheet" href="css/dark.css" id="dark" class="alternate" disabled>
+  <link rel="stylesheet" href="css/colorjoe.css">
 
-    <!-- import the webpage's javascript file -->
-    <script type="module" src="js/script.js" defer></script>
-  </head>
-  <body>
-    <header class="header">
-      <div class="left">
-        <img src="assets/adafruit-logo.svg" class="Adafruit-Logo">
-      </div>
-      <div class="right">
-        <label for="knownonly">
-          Show only known devices
+  <!-- import the webpage's javascript file -->
+  <script type="module" src="js/script.js" defer></script>
+</head>
+
+<body>
+  <header class="flex-container flex-row header">
+    <img src="assets/aulitech-logo.svg" class="Aulitech-Logo">
+    <div class="title">
+      Cato Dashboard
+    </div>
+
+    <div class="hidden"><!-- don't show known devices switch-->
+      <label for="knownonly">
+        Show only known devices
+      </label>
+      <div class="onoffswitch">
+        <input type="checkbox" name="knownonly" class="onoffswitch-checkbox" id="knownonly">
+        <label class="onoffswitch-label" for="knownonly">
+          <span class="onoffswitch-inner"></span>
+          <span class="onoffswitch-switch"></span>
         </label>
-        <div class="onoffswitch">
-          <input type="checkbox" name="knownonly" class="onoffswitch-checkbox" id="knownonly">
-          <label class="onoffswitch-label" for="knownonly">
-            <span class="onoffswitch-inner"></span>
-            <span class="onoffswitch-switch"></span>
-          </label>
-        </div>
-        <button id="butConnect" type="button">Connect</button>
       </div>
-    </header>
-    <main class="main">
-      <div id="notSupported" class="notSupported">
-        Sorry, <b>Web Bluetooth</b> is not supported on this device, make sure you're
-        running Chrome 56 or later. If you are running linux, make sure you have enabled the
-        <code>#enable-experimental-web-platform-features</code> flag in
-        <code>chrome://flags</code>
-      </div>
-      <div class="subheader">
-        <div class="title left">
-          Web Bluetooth Dashboard
-        </div>
-        <div class="right">
+    </div>
+    <button id="butConnect" type="button">Scan</button>
+    </div>
+  </header>
+  <main class="main">
+    <div id="notSupported" class="notSupported">
+      Sorry, <b>Web Bluetooth</b> is not supported on this device, make sure you're
+      running Chrome 56 or later. If you are running linux, make sure you have enabled the
+      <code>#enable-experimental-web-platform-features</code> flag in
+      <code>chrome://flags</code>
+    </div>
+    <div class="subheader">
+
+      <div class="right">
+        <div class="hidden"><!-- don't show darkmode switch-->
           <label for="darkmode">
             Dark Mode
           </label>
@@ -79,11 +86,14 @@
           </div>
         </div>
       </div>
-      <div id="dashboard"></div>
-      <div id="log"></div>
-    </main>
-    <footer class="footer">
-      <div class="left">
+    </div>
+    <div id="dashboard"></div>
+    <div id="log" class="flex-container flex-col justify-start"></div>
+  </main>
+  <footer class="flex-container flex-row footer">
+    <div class="left">
+      <div class="hidden"><!-- don't show Autoscroll or Timestamp switch-->
+
         <label for="autoscroll">Autoscroll</label>
         <div class="onoffswitch">
           <input type="checkbox" name="autoscroll" class="onoffswitch-checkbox" id="autoscroll">
@@ -101,104 +111,106 @@
           </label>
         </div>
       </div>
-      <div class="right">
-        <span id="fpsCounter"></span>
-        <button id="butClear" type="button">Clear Text</button>
+    </div>
+    <div class="right">
+      <span id="fpsCounter"></span>
+      <button id="butClear" type="button">Clear Text</button>
+    </div>
+  </footer>
+  <div id="templates">
+    <div class="text">
+      <div class="title">
+        title
       </div>
-    </footer>
-    <div id="templates">
-      <div class="text">
-        <div class="title">
-          title
-        </div>
-        <div class="content">
-          <p>
+      <div class="content">
+        <p>
           content
-          </p>
-        </div>
+        </p>
       </div>
-      <div class="graph">
-        <div class="title">
-          title
-        </div>
-        <div class="content">
-          <div class="text">
-            <p></p>
-          </div>
-          <div class="chart">
-            <canvas></canvas>
-          </div>
-        </div>
+    </div>
+    <div class="graph">
+      <div class="title">
+        title
       </div>
-      <div class="color">
-        <div class="title">
-          title
+      <div class="content">
+        <div class="text">
+          <p></p>
         </div>
-        <div class="content">
-          <div></div>
-        </div>
-      </div>
-      <div class="model3d">
-        <div class="title">
-          title
-        </div>
-        <div class="content">
+        <div class="chart">
           <canvas></canvas>
         </div>
       </div>
-      <div class="battery-level">
-        <div class="title">
-          title
+    </div>
+    <div class="color">
+      <div class="title">
+        title
+      </div>
+      <div class="content">
+        <div></div>
+      </div>
+    </div>
+    <div class="model3d">
+      <div class="title">
+        title
+      </div>
+      <div class="content">
+        <canvas></canvas>
+      </div>
+    </div>
+    <div class="battery-level">
+      <div class="title">
+        title
+      </div>
+      <div class="content">
+        <div class="battery" data-toggle="tooltip" title="Battery Level: 100%">
+          <span class="level" style="width:100%;"></span>
         </div>
-        <div class="content">
-          <div class="battery" data-toggle="tooltip" title="Battery Level: 100%">
-            <span class="level" style="width:100%;"></span>
-          </div>
-          <div class="percentage">
-            100%
-          </div>
+        <div class="percentage">
+          100%
         </div>
       </div>
-      <div class="play-button">
-        <div class="title">
-          title
-        </div>
-        <div class="content">
-          <div class="button">
-            <span></span>
-          </div>
+    </div>
+    <div class="play-button">
+      <div class="title">
+        title
+      </div>
+      <div class="content">
+        <div class="button">
+          <span></span>
         </div>
       </div>
-      <div class="onboard-buttons">
-        <div class="title">
-          title
-        </div>
-        <div class="content">
+    </div>
+    <div class="onboard-buttons">
+      <div class="title">
+        title
+      </div>
+      <div class="content">
+      </div>
+    </div>
+    <div class="onboard-switch">
+      <div class="title">
+        title
+      </div>
+      <div class="content">
+        <div class="onoffswitch">
+          <input type="checkbox" name="onboardSwitch" class="onoffswitch-checkbox" id="onboardSwitch" disabled>
+          <label class="onoffswitch-label" for="onboardSwitch">
+            <span class="onoffswitch-inner"></span>
+            <span class="onoffswitch-switch"></span>
+          </label>
         </div>
       </div>
-      <div class="onboard-switch">
-        <div class="title">
-          title
-        </div>
-        <div class="content">
-          <div class="onoffswitch">
-            <input type="checkbox" name="onboardSwitch" class="onoffswitch-checkbox" id="onboardSwitch" disabled>
-            <label class="onoffswitch-label" for="onboardSwitch">
-              <span class="onoffswitch-inner"></span>
-              <span class="onoffswitch-switch"></span>
-            </label>
-          </div>
-        </div>
-      </div>
-      <div class="roundbutton">
-        <div class="buttonpanel">
-          <div class="roundbtn">
-            <div class="inner">
-              <span class="text"></span>
-            </div>
+    </div>
+    <div class="roundbutton">
+      <div class="buttonpanel">
+        <div class="roundbtn">
+          <div class="inner">
+            <span class="text"></span>
           </div>
         </div>
       </div>
     </div>
-  </body>
+  </div>
+</body>
+
 </html>

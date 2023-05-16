@@ -57,19 +57,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 const boards = {
-  CLUE: {
-    colorOrder: 'GRB',
-    neopixels: 1,
-    hasSwitch: false,
-    buttons: 2,
-  },
-  CPlay: {
-    colorOrder: 'GRB',
-    neopixels: 10,
-    hasSwitch: true,
-    buttons: 2,
-  },
-  Sense: {
+  Cato: {
     colorOrder: 'GRB',
     neopixels: 1,
     hasSwitch: false,
@@ -349,7 +337,7 @@ function encodePacket(panelId, values) {
 async function connect() {
   // - Request a port and open a connection.
   if (!device) {
-    logMsg('Connecting to device ...');
+    logMsg('Connecting to device ...' + knownOnly.checked);
     let services = [];
     for (let panelId of Object.keys(panels)) {
       services.push(getFullId(panels[panelId].serviceId));
@@ -361,11 +349,13 @@ async function connect() {
       for(let board of knownBoards) {
         filters.push({name: board});
       }
+      logMsg('Filters: ' + JSON.stringify(filters));
       device = await navigator.bluetooth.requestDevice({
         filters: filters,
         optionalServices: services,
       });
     } else {
+      logMsg('No filters');
       device = await navigator.bluetooth.requestDevice({
         acceptAllDevices: true,
         optionalServices: services,
@@ -408,17 +398,17 @@ async function connect() {
         logMsg('');
         logMsg('Characteristic Information');
         logMsg('---------------------------');
-        logMsg('> Sensor:               ' + ucWords(panelId));
-        logMsg('> Characteristic UUID:  ' + panels[panelId].characteristic.uuid);
-        logMsg('> Broadcast:            ' + panels[panelId].characteristic.properties.broadcast);
-        logMsg('> Read:                 ' + panels[panelId].characteristic.properties.read);
-        logMsg('> Write w/o response:   ' + panels[panelId].characteristic.properties.writeWithoutResponse);
-        logMsg('> Write:                ' + panels[panelId].characteristic.properties.write);
-        logMsg('> Notify:               ' + panels[panelId].characteristic.properties.notify);
-        logMsg('> Indicate:             ' + panels[panelId].characteristic.properties.indicate);
-        logMsg('> Signed Write:         ' + panels[panelId].characteristic.properties.authenticatedSignedWrites);
-        logMsg('> Queued Write:         ' + panels[panelId].characteristic.properties.reliableWrite);
-        logMsg('> Writable Auxiliaries: ' + panels[panelId].characteristic.properties.writableAuxiliaries);
+        logMsg('\tSensor:               ' + ucWords(panelId));
+        logMsg('\tCharacteristic UUID:  ' + panels[panelId].characteristic.uuid);
+        logMsg('\tBroadcast:            ' + panels[panelId].characteristic.properties.broadcast);
+        logMsg('\tRead:                 ' + panels[panelId].characteristic.properties.read);
+        logMsg('\tWrite w/o response:   ' + panels[panelId].characteristic.properties.writeWithoutResponse);
+        logMsg('\tWrite:                ' + panels[panelId].characteristic.properties.write);
+        logMsg('\tNotify:               ' + panels[panelId].characteristic.properties.notify);
+        logMsg('\tIndicate:             ' + panels[panelId].characteristic.properties.indicate);
+        logMsg('\tSigned Write:         ' + panels[panelId].characteristic.properties.authenticatedSignedWrites);
+        logMsg('\tQueued Write:         ' + panels[panelId].characteristic.properties.reliableWrite);
+        logMsg('\tWritable Auxiliaries: ' + panels[panelId].characteristic.properties.writableAuxiliaries);
 
         if (panels[panelId].properties.includes("notify")) {
           if (panels[panelId].measurementPeriod !== undefined) {
@@ -509,15 +499,16 @@ function getFullId(shortId) {
 }
 
 function logMsg(text) {
-  // Update the Log
+    // Update the Log
+  let ts = '';
   if (showTimestamp.checked) {
     let d = new Date();
     let timestamp = d.getHours() + ":" + `${d.getMinutes()}`.padStart(2, 0) + ":" +
         `${d.getSeconds()}`.padStart(2, 0) + "." + `${d.getMilliseconds()}`.padStart(3, 0);
-    log.innerHTML += '<span class="timestamp">' + timestamp + ' -> </span>';
+    ts = '<span class="timestamp">' + timestamp + '</span>';
     d = null;
   }
-  log.innerHTML += text+ "<br>";
+  log.innerHTML += '<span class="flex-container flex-row justify-start align-start padNone">' + ts + '<span class="padLeft">' + text + '</span></span>';
 
   // Remove old log content
   if (log.textContent.split("\n").length > maxLogLength + 1) {
@@ -664,7 +655,7 @@ function convertJSON(chunk) {
 }
 
 function toggleUIConnected(connected) {
-  let lbl = 'Connect';
+  let lbl = 'Scan';
   if (connected) {
     lbl = 'Disconnect';
   }
@@ -674,8 +665,8 @@ function toggleUIConnected(connected) {
 function loadAllSettings() {
   // Load all saved settings or defaults
   autoscroll.checked = loadSetting('autoscroll', true);
-  showTimestamp.checked = loadSetting('timestamp', false);
-  darkMode.checked = loadSetting('darkmode', false);
+  showTimestamp.checked = loadSetting('timestamp', true);
+  darkMode.checked = loadSetting('darkmode', true);
   knownOnly.checked = loadSetting('knownonly', true);
 }
 

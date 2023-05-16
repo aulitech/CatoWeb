@@ -51,7 +51,7 @@ input, select, button {
 }
 
 .timestamp {
-  color: #8ec641;
+  color: #757575;
 }
 
 #log {
@@ -74,4 +74,23 @@ input, select, button {
 .colorPicker .oned .pointer .shape {
   border-left-color: #fff;
   border-right-color: #fff;
+}
+
+::-webkit-scrollbar {
+  width: .5rem;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: #757575;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #aca0008d;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #aca100;
 }

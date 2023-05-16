@@ -1,18 +1,54 @@
-/**
- * Header
- */
+.flex-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: calc(100% - 3rem);
+  padding: .25rem 1.5rem;
+}
+
+.flex-row {
+  flex-direction: row;
+}
+
+.flex-col {
+  flex-direction: column;
+}
+
+.align-start {
+  align-items: flex-start;
+}
+
+.justify-start {
+  justify-content: flex-start;
+}
+
+.justify-end {
+  justify-content: flex-end;
+}
+
+.padLeft {
+  padding-left: 1.5rem;
+}
+
+.padRight {
+  padding-right: 1.5rem;
+}
+
+.padTop {
+  padding-top: .25rem;
+}
+
+.padBottom {
+  padding-bottom: .25rem;
+}
+
+.padNone {
+  padding: 0;
+}
 
 .header {
-  box-sizing: border-box;
-  font-size: 16px;
-  height: 85px;
-  line-height: 40px;
-  padding: 20px 70px 0px 70px; /* TRouBLe */
   position: fixed;
-  width: 100%;
-  z-index: 1000;
-  margin: 0;
-  border-bottom: 5px solid #00a7e9;
+  /* border-bottom: .25rem solid #fedd68; */
 }
 
 .header h1 {
@@ -25,8 +61,6 @@
   border: solid 2px #fff;
   background-color: #000;
   color: #fff;
-  margin-left: 20px;
-  height: 30px;
 }
 
 .header button:hover {
@@ -54,7 +88,10 @@ p {
   margin: 0;
 }
 
-input, select, button, label {
+input,
+select,
+button,
+label {
   font-weight: 600;
   outline: none;
 }
@@ -75,9 +112,8 @@ div.clear {
   clear: both;
 }
 
-.Adafruit-Logo {
-  width: 115px;
-  height: 40px;
+.Aulitech-Logo {
+  height: 2rem;
   object-fit: contain;
 }
 
@@ -117,7 +153,7 @@ div.clear {
   padding: 0 60px;
 }
 
-#dashboard > div {
+#dashboard>div {
   width: 244px;
   height: 244px;
   margin: 0 10px 20px;
@@ -190,30 +226,23 @@ div.clear {
 }
 
 #log {
-  height: calc(40vh - 190px);
-  width: 100%;
+  height: calc(20vh - 1.5rem);
   font-family: pt-mono, monospace;
   font-style: normal;
-  font-weight: 400;
-  font-size: 16px;
-  overflow-x: hidden;
-  overflow-x: auto;
-  transition : color 0.1s linear;
-  padding: 0 50px;
-  border: 20px solid #000;
+  font-weight: 200;
+  font-size: .8rem;
+  overflow: auto;
+  transition: color 0.1s linear;
+  align-items: flex-start;
+  /*border: 20px solid #000;*/
 }
 
 .footer {
-  height: 45px;
-  line-height: 45px;
-  padding-left: 70px;
-  padding-right: 70px;
+  font-size: 1rem;
+  /* border-bottom: .25rem solid #fedd68; */
 }
 
-.footer button {
-  font-size: 14px;
-  margin: 0 10px;
-}
+.footer button {}
 
 .remix {
   display: flex;
@@ -307,15 +336,15 @@ div.clear {
   transition: all 0.3s ease-in 0s;
 }
 
-.onoffswitch-checkbox:checked + .onoffswitch-label {
+.onoffswitch-checkbox:checked+.onoffswitch-label {
   border-color: #71ae1e;
 }
 
-.onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-inner {
+.onoffswitch-checkbox:checked+.onoffswitch-label .onoffswitch-inner {
   margin-left: 0;
 }
 
-.onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-switch {
+.onoffswitch-checkbox:checked+.onoffswitch-label .onoffswitch-switch {
   right: 0px;
   border-color: #67ac38;
 }
@@ -375,7 +404,7 @@ div.clear {
 }
 
 #dashboard .battery-level .battery:after {
-  content:"";
+  content: "";
   width: 12px;
   height: 20px;
   background: #333;
@@ -386,7 +415,9 @@ div.clear {
   border-radius: 0 2px 2px 0;
 }
 
-#dashboard .battery-level .battery:hover {cursor:pointer;}
+#dashboard .battery-level .battery:hover {
+  cursor: pointer;
+}
 
 #dashboard .battery-level .level {
   display: block;
@@ -444,7 +475,7 @@ div.clear {
   border-radius: 32px;
 }
 
-#dashboard .onboard-switch .onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-switch {
+#dashboard .onboard-switch .onoffswitch-checkbox:checked+.onoffswitch-label .onoffswitch-switch {
   right: 0px;
 }
 
