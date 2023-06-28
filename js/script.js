@@ -10,9 +10,10 @@
 'use strict';
 
 import * as THREE from 'three';
-import {GLTFLoader} from 'gltfloader';
+import { GLTFLoader } from 'gltfloader';
 
-let device;
+let device = null; //loadSetting('lastDevice', null);  // Disabled for now
+let lastDevice = device;
 
 const bufferSize = 64;
 const colors = ['#00a7e9', '#f89521', '#be1e2d'];
@@ -45,9 +46,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   darkMode.addEventListener('click', clickDarkMode);
   knownOnly.addEventListener('click', clickKnownOnly);
 
-  if ('bluetooth' in navigator) {
+  if (!('bluetooth' in navigator)) {
     const notSupported = document.getElementById('notSupported');
-    notSupported.classList.add('hidden');
+    notSupported.classList.remove('hidden');
   }
 
   loadAllSettings();
@@ -78,16 +79,16 @@ let panels = {
     characteristicId: 'battery_level',
     panelType: "custom",
     structure: ['Uint8'],
-    data: {battery:[]},
+    data: { battery: [] },
     properties: ['notify'],
-    textFormat: function(value) {
+    textFormat: function (value) {
       return numeral(value).format('0.0') + '%';
     },
-    create: function(panelId) {
+    create: function (panelId) {
       let panelTemplate = loadPanelTemplate(panelId, 'battery-level');
       this.update(panelId);
     },
-    update: function(panelId) {
+    update: function (panelId) {
       let panelElement = document.querySelector("#dashboard > #" + panelId);
       let value = null;
       if (panels[panelId].data.battery.length > 0) {
@@ -123,9 +124,9 @@ let panels = {
     characteristicId: '0101',
     panelType: "graph",
     structure: ['Float32'],
-    data: {temperature:[]},
+    data: { temperature: [] },
     properties: ['notify'],
-    textFormat: function(value) {
+    textFormat: function (value) {
       return numeral((9 / 5 * value) + 32).format('0.00') + '&deg; F';
     },
   },
@@ -134,7 +135,7 @@ let panels = {
     characteristicId: '0301',
     panelType: "graph",
     structure: ['Float32'],
-    data: {light:[]},
+    data: { light: [] },
     properties: ['notify'],
   },
   accelerometer: {
@@ -142,9 +143,9 @@ let panels = {
     characteristicId: '0201',
     panelType: "graph",
     structure: ['Float32', 'Float32', 'Float32'],
-    data: {x:[], y:[], z:[]},
+    data: { x: [], y: [], z: [] },
     properties: ['notify'],
-    textFormat: function(value) {
+    textFormat: function (value) {
       return numeral(value).format('0.00');
     },
     measurementPeriod: 500,
@@ -154,9 +155,9 @@ let panels = {
     characteristicId: '0401',
     panelType: "graph",
     structure: ['Float32', 'Float32', 'Float32'],
-    data: {x:[], y:[], z:[]},
+    data: { x: [], y: [], z: [] },
     properties: ['notify'],
-    textFormat: function(value) {
+    textFormat: function (value) {
       return numeral(value).format('0.00');
     },
     measurementPeriod: 500,
@@ -166,9 +167,9 @@ let panels = {
     characteristicId: '0501',
     panelType: "graph",
     structure: ['Float32', 'Float32', 'Float32'],
-    data: {x:[], y:[], z:[]},
+    data: { x: [], y: [], z: [] },
     properties: ['notify'],
-    textFormat: function(value) {
+    textFormat: function (value) {
       return numeral(value).format('0.00') + ' &micro;T';
     },
     measurementPeriod: 500,
@@ -178,9 +179,9 @@ let panels = {
     characteristicId: '0601',
     panelType: "custom",
     structure: ['Uint32'],
-    data: {buttonState:[]},
+    data: { buttonState: [] },
     properties: ['notify'],
-    create: function(panelId) {
+    create: function (panelId) {
       let panelTemplate = loadPanelTemplate(panelId, 'onboard-buttons');
       for (let i = 0; i < currentBoard.buttons; i++) {
         let buttonTemplate = document.querySelector("#templates > .roundbutton").cloneNode(true);
@@ -189,7 +190,7 @@ let panels = {
         panelTemplate.querySelector(".content").appendChild(buttonTemplate);
       }
     },
-    update: function(panelId) {
+    update: function (panelId) {
       let panelElement = document.querySelector("#dashboard > #" + panelId);
       buttonState = panels[panelId].data.buttonState.pop();
       if (panels.switch.condition()) {
@@ -210,16 +211,16 @@ let panels = {
     characteristicId: '0601',
     panelType: "custom",
     structure: ['Uint32'],
-    data: {buttonState:[]},
+    data: { buttonState: [] },
     properties: [],
-    condition: function() {
+    condition: function () {
       return currentBoard.hasSwitch;
     },
-    create: function(panelId) {
+    create: function (panelId) {
       let panelTemplate = loadPanelTemplate(panelId, 'onboard-switch');
       this.update(panelId);
     },
-    update: function(panelId) {
+    update: function (panelId) {
       // UI Only Update
       let panelElement = document.querySelector("#dashboard > #" + panelId);
       panelElement.querySelector(".content #onboardSwitch").checked = buttonState & 1;
@@ -230,9 +231,9 @@ let panels = {
     characteristicId: '0701',
     panelType: "graph",
     structure: ['Float32'],
-    data: {humidity:[]},
+    data: { humidity: [] },
     properties: ['notify'],
-    textFormat: function(value) {
+    textFormat: function (value) {
       return numeral(value).format('0.0') + '%';
     },
   },
@@ -241,9 +242,9 @@ let panels = {
     characteristicId: '0801',
     panelType: "graph",
     structure: ['Float32'],
-    data: {barometric:[]},
+    data: { barometric: [] },
     properties: ['notify'],
-    textFormat: function(value) {
+    textFormat: function (value) {
       return numeral(value).format('0.00') + ' hPA';
     },
   },
@@ -251,12 +252,12 @@ let panels = {
     serviceId: '0c00',
     characteristicId: '0c01',
     panelType: "custom",
-    create: function(panelId) {
+    create: function (panelId) {
       let panelTemplate = loadPanelTemplate(panelId, 'play-button');
-      panelTemplate.querySelector(".content .button").onclick = function() {
+      panelTemplate.querySelector(".content .button").onclick = function () {
         let button = this;
         button.disabled = true;
-        playSound(440, 1000, function() {button.disabled = false;})
+        playSound(440, 1000, function () { button.disabled = false; })
       }
       this.packetSequence = this.structure;
     },
@@ -268,7 +269,7 @@ let panels = {
     characteristicId: '0903',
     panelType: "color",
     structure: ['Uint16', 'Uint8', 'Uint8[]'],
-    data: {R:[],G:[],B:[]},
+    data: { R: [], G: [], B: [] },
     properties: ['write'],
   },
   'model3d': {
@@ -277,34 +278,51 @@ let panels = {
     characteristicId: '0d01',
     panelType: "model3d",
     structure: ['Float32', 'Float32', 'Float32', 'Float32'],
-    data: {w:[],x:[], y:[], z:[]},
+    data: { w: [], x: [], y: [], z: [] },
     style: "font-size: 16px;",
     properties: ['notify'],
-    textFormat: function(value) {
+    textFormat: function (value) {
       return numeral(value).format('0.00') + ' rad';
     },
     measurementPeriod: 200,
+  },
+  gestures: {
+    title: 'Gestures',
+    serviceId: '51ad213f-e568-4e35-84e4-67af89c79ef0',
+    characteristicId: '528ff74b-fdb8-444c-9c64-3dd5da4135ae',
+    panelType: "text",
+    structure: ['string'],
+    //structure: ['Float32', 'Float32', 'Float32', 'Float32'],
+    //data: { w: [], x: [], y: [], z: [] },
+
+    properties: ['notify'],
+    style: "font-size: xx-small;",
+    textFormat: function (value) {
+      return value;
+    },
+    //measurementPeriod: 500,
   },
 };
 
 function playSound(frequency, duration, callback) {
   if (callback === undefined) {
-    callback = function() {};
+    callback = function () { };
   }
 
   let value = encodePacket('tone', [frequency, duration]);
   panels.tone.characteristic.writeValue(value)
-    .catch(error => {console.log(error);})
+    .catch(error => { console.log(error); })
     .then(callback);
 }
 
 function encodePacket(panelId, values) {
   const typeMap = {
-    "Uint8":    {fn: DataView.prototype.setUint8,    bytes: 1},
-    "Uint16":   {fn: DataView.prototype.setUint16,   bytes: 2},
-    "Uint32":   {fn: DataView.prototype.setUint32,   bytes: 4},
-    "Int32":    {fn: DataView.prototype.setInt32,    bytes: 4},
-    "Float32":  {fn: DataView.prototype.setFloat32,  bytes: 4},
+    "Uint8": { fn: DataView.prototype.setUint8, bytes: 1 },
+    "Uint16": { fn: DataView.prototype.setUint16, bytes: 2 },
+    "Uint32": { fn: DataView.prototype.setUint32, bytes: 4 },
+    "Int32": { fn: DataView.prototype.setInt32, bytes: 4 },
+    "Float32": { fn: DataView.prototype.setFloat32, bytes: 4 },
+    //"string": { fn: DataView.prototype.setStr, bytes: value.byteLength }
   };
 
   if (values.length != panels[panelId].packetSequence.length) {
@@ -313,7 +331,7 @@ function encodePacket(panelId, values) {
   }
 
   let bufferSize = 0, packetPointer = 0;
-  panels[panelId].packetSequence.forEach(function(dataType) {
+  panels[panelId].packetSequence.forEach(function (dataType) {
     bufferSize += typeMap[dataType].bytes;
   });
 
@@ -337,33 +355,47 @@ function encodePacket(panelId, values) {
 async function connect() {
   // - Request a port and open a connection.
   if (!device) {
-    logMsg('Connecting to device ...' + knownOnly.checked);
     let services = [];
     for (let panelId of Object.keys(panels)) {
-      services.push(getFullId(panels[panelId].serviceId));
+      panels[panelId].serviceId.length == 4 ?
+        services.push(getFullId(panels[panelId].serviceId)) :
+        services.push(panels[panelId].serviceId);
+      //services.push(getFullId(panels[panelId].serviceId));
     }
+    logMsg('Services: ' + JSON.stringify(services));
     if (knownOnly.checked) {
       let knownBoards = Object.keys(boards);
       knownBoards.pop();
       let filters = [];
-      for(let board of knownBoards) {
-        filters.push({name: board});
+      for (let board of knownBoards) {
+        filters.push({ name: board });
       }
-      logMsg('Filters: ' + JSON.stringify(filters));
+      logMsg('Devices: ' + JSON.stringify(filters));
       device = await navigator.bluetooth.requestDevice({
         filters: filters,
         optionalServices: services,
       });
     } else {
-      logMsg('No filters');
+      logMsg('Any device');
       device = await navigator.bluetooth.requestDevice({
         acceptAllDevices: true,
         optionalServices: services,
       });
     }
   }
+
+  /* Save the device so we can reconnect later -- disabled for now
+  // because it's not working - can't serialize the device object
+
+    if (!(device == lastDevice)) {
+      logMsg('Saving last device: ' + JSON.stringify(device) );
+      saveSetting('lastDevice', JSON.stringify(device));
+      lastDevice = device;
+    }
+  */
+
   if (device) {
-    logMsg("Connected to device " + device.name);
+    logMsg("Connecting to:  " + device.name + " (" + JSON.stringify(device) + ")");
     if (boards.hasOwnProperty(device.name)) {
       currentBoard = boards[device.name];
     } else {
@@ -372,7 +404,7 @@ async function connect() {
     device.addEventListener('gattserverdisconnected', onDisconnected);
     let server = await device.gatt.connect();
     const availableServices = await server.getPrimaryServices();
-
+    logMsg('Found Services: ' + JSON.stringify(availableServices));
     // Create the panels only if service available
     for (let panelId of Object.keys(panels)) {
       if (panels[panelId].condition == undefined || panels[panelId].condition()) {
@@ -392,9 +424,9 @@ async function connect() {
     reset();
 
     for (let panelId of activePanels) {
-      let service = await server.getPrimaryService(getFullId(panels[panelId].serviceId)).catch(error => {console.log(error);});
+      let service = await server.getPrimaryService(getFullId(panels[panelId].serviceId)).catch(error => { console.log(error); });
       if (service) {
-        panels[panelId].characteristic = await service.getCharacteristic(getFullId(panels[panelId].characteristicId)).catch(error => {console.log(error);});
+        panels[panelId].characteristic = await service.getCharacteristic(getFullId(panels[panelId].characteristicId)).catch(error => { console.log(error); });
         logMsg('');
         logMsg('Characteristic Information');
         logMsg('---------------------------');
@@ -412,31 +444,31 @@ async function connect() {
 
         if (panels[panelId].properties.includes("notify")) {
           if (panels[panelId].measurementPeriod !== undefined) {
-            let mpChar = await service.getCharacteristic(getFullId(measurementPeriodId)).catch(error => {console.log(error);});
+            let mpChar = await service.getCharacteristic(getFullId(measurementPeriodId)).catch(error => { console.log(error); });
             let view = new DataView(new ArrayBuffer(4));
             view.setInt32(0, panels[panelId].measurementPeriod, true);
             mpChar.writeValue(view.buffer)
-              .catch(error => {console.log(error);})
+              .catch(error => { console.log(error); })
               .then(_ => {
-              logMsg("Changed measurement period for " + ucWords(panelId) + " to " + panels[panelId].measurementPeriod + "ms");
-            });
+                logMsg("Changed measurement period for " + ucWords(panelId) + " to " + panels[panelId].measurementPeriod + "ms");
+              });
           }
           logMsg('Starting notifications for ' + ucWords(panelId));
           await panels[panelId].characteristic.startNotifications();
-          panels[panelId].characteristic.addEventListener('characteristicvaluechanged', function(event){handleIncoming(panelId, event.target.value);});
+          panels[panelId].characteristic.addEventListener('characteristicvaluechanged', function (event) { handleIncoming(panelId, event.target.value); });
         }
         if (panels[panelId].properties.includes("read")) {
           let intervalPeriod = 1000;
           if (panels[panelId].measurementPeriod !== undefined) {
             intervalPeriod = panels[panelId].measurementPeriod;
           }
-          panels[panelId].polling = setInterval(function() {
+          panels[panelId].polling = setInterval(function () {
             if (!panels[panelId].readInProgress) {
               panels[panelId].readInProgress = true;
-            panels[panelId].characteristic.readValue()
-              .then(function(data) {
-                handleIncoming(panelId, data);
-               }).catch(error => {});
+              panels[panelId].characteristic.readValue()
+                .then(function (data) {
+                  handleIncoming(panelId, data);
+                }).catch(error => { });
               panels[panelId].readInProgress = false;
             }
           }, intervalPeriod);
@@ -451,24 +483,32 @@ async function readActiveSensors() {
   for (let panelId of activePanels) {
     let panel = panels[panelId];
     if (panels[panelId].properties.includes("read") || panels[panelId].properties.includes("notify")) {
-      await panels[panelId].characteristic.readValue().then(function(data){handleIncoming(panelId, data);});
+      await panels[panelId].characteristic.readValue().then(function (data) { handleIncoming(panelId, data); });
     }
   }
+}
+
+// Extend DataView to support strings
+DataView.prototype.getStr = function () {
+  let d = new TextDecoder;
+  return d.decode(this.buffer)
 }
 
 function handleIncoming(panelId, value) {
   const columns = Object.keys(panels[panelId].data);
   const typeMap = {
-    "Uint8":    {fn: DataView.prototype.getUint8,    bytes: 1},
-    "Uint16":   {fn: DataView.prototype.getUint16,   bytes: 2},
-    "Uint32":   {fn: DataView.prototype.getUint32,   bytes: 4},
-    "Float32":  {fn: DataView.prototype.getFloat32,  bytes: 4}
+    "Uint8": { fn: DataView.prototype.getUint8, bytes: 1 },
+    "Uint16": { fn: DataView.prototype.getUint16, bytes: 2 },
+    "Uint32": { fn: DataView.prototype.getUint32, bytes: 4 },
+    "Float32": { fn: DataView.prototype.getFloat32, bytes: 4 },
+    "string": { fn: DataView.prototype.getStr, bytes: value.byteLength }
   };
-
+  logMsg('Received ' + value.byteLength + ' bytes for ' + ucWords(panelId));
   let packetPointer = 0, i = 0;
-  panels[panelId].structure.forEach(function(dataType) {
+  panels[panelId].structure.forEach(function (dataType) {
     let dataViewFn = typeMap[dataType].fn.bind(value);
     let unpackedValue = dataViewFn(packetPointer, true);
+    logMsg(dataType + ' : ' + unpackedValue);
     panels[panelId].data[columns[i]].push(unpackedValue);
     if (panels[panelId].data[columns[i]].length > bufferSize) {
       panels[panelId].data[columns[i]].shift();
@@ -499,12 +539,12 @@ function getFullId(shortId) {
 }
 
 function logMsg(text) {
-    // Update the Log
+  // Update the Log
   let ts = '';
   if (showTimestamp.checked) {
     let d = new Date();
     let timestamp = d.getHours() + ":" + `${d.getMinutes()}`.padStart(2, 0) + ":" +
-        `${d.getSeconds()}`.padStart(2, 0) + "." + `${d.getMilliseconds()}`.padStart(3, 0);
+      `${d.getSeconds()}`.padStart(2, 0) + "." + `${d.getMilliseconds()}`.padStart(3, 0);
     ts = '<span class="timestamp">' + timestamp + '</span>';
     d = null;
   }
@@ -567,7 +607,7 @@ async function reset() {
   colorIndex = 0;
 
   // Clear the log
-  log.innerHTML = "";
+  //log.innerHTML = "";
 }
 
 /**
@@ -580,7 +620,7 @@ async function clickConnect() {
     return;
   }
 
-  await connect().then(_ => {toggleUIConnected(true);}).catch(() => {});
+  await connect().then(_ => { toggleUIConnected(true); }).catch(() => { });
 }
 
 async function onDisconnected(event) {
@@ -705,6 +745,8 @@ function updatePanel(panelId) {
   if (!panels[panelId].rendered) {
     if (panels[panelId].panelType == "text") {
       updateTextPanel(panelId);
+    } else if (panels[panelId].panelType == "gestures") {
+      updateGesturesPanel(panelId);
     } else if (panels[panelId].panelType == "graph") {
       updateGraphPanel(panelId);
     } else if (panels[panelId].panelType == "model3d") {
@@ -718,10 +760,13 @@ function updatePanel(panelId) {
 
 function createPanel(panelId) {
   if (panels.hasOwnProperty(panelId)) {
+    logMsg('createPanel: ' + JSON.stringify(panels[panelId]));
     if (panels[panelId].panelType == "text") {
       createTextPanel(panelId);
+    } else if (panels[panelId].panelType == "gestures") {
+      createGesturesPanel(panelId);
     } else if (panels[panelId].panelType == "graph") {
-      createGraphPanel(panelId);
+        createGraphPanel(panelId);
     } else if (panels[panelId].panelType == "color") {
       createColorPanel(panelId);
     } else if (panels[panelId].panelType == "model3d") {
@@ -752,14 +797,14 @@ function clearGraphData() {
 }
 
 function ucWords(text) {
-  return text.replace('_', ' ').toLowerCase().replace(/(?<= )[^\s]|^./g, a=>a.toUpperCase())
+  return text.replace('_', ' ').toLowerCase().replace(/(?<= )[^\s]|^./g, a => a.toUpperCase())
 }
 
 function loadPanelTemplate(panelId, templateId) {
   if (templateId == undefined) {
     templateId = panels[panelId].panelType;
   }
-    // Create Panel from Template
+  // Create Panel from Template
   let panelTemplate = document.querySelector("#templates > ." + templateId).cloneNode(true);
   panelTemplate.id = panelId;
   if (panels[panelId].title !== undefined) {
@@ -807,6 +852,40 @@ function updateTextPanel(panelId) {
   panelElement.querySelector(".content p").innerHTML = panelContent;
 }
 
+/* Gestures Panel */
+function createGesturesPanel(panelId) {
+  // Create Panel from Template
+  let panelTemplate = loadPanelTemplate(panelId);
+  panelTemplate.querySelector(".content p").innerHTML = "";
+  if (panels[panelId].style !== undefined) {
+    panelTemplate.querySelector(".content").style = panels[panelId].style;
+  }
+}
+
+function updateGesturesPanel(panelId) {
+  let panelElement = document.querySelector("#dashboard > #" + panelId);
+  let panelContent = [];
+  Object.entries(panels[panelId].data).forEach(([field, item], index) => {
+    let value = "";
+    if (panels[panelId].data[field].length > 0) {
+      value = panels[panelId].data[field].pop(); // Show only the last piece of data
+      panels[panelId].data[field] = [];
+      if (panels[panelId].textFormat !== undefined) {
+        value = panels[panelId].textFormat(value);
+      }
+    }
+    if (value !== "") {
+      panelContent.push(value);
+    }
+  });
+  if (panelContent.length == 0) {
+    panelContent = "";
+  } else {
+    panelContent = panelContent.join("<br>");
+  }
+  panelElement.querySelector(".content p").innerHTML = panelContent;
+}
+
 /* Graph Panel */
 function createGraphPanel(panelId) {
   // Create Panel from Template
@@ -840,7 +919,7 @@ function updateGraphPanel(panelId) {
   Object.entries(panels[panelId].data).forEach(([field, item], index) => {
     if (panels[panelId].data[field].length > 0) {
       let value = null;
-      while(panels[panelId].data[field].length > 0) {
+      while (panels[panelId].data[field].length > 0) {
         value = panels[panelId].data[field].shift();
         panels[panelId].graph.addValue(index, value, false);
       }
@@ -886,18 +965,18 @@ function createColorPanel(panelId) {
   function updateModelLed(color) {
     logMsg("Changing neopixel to " + color.hex());
     let orderedColors = adjustColorOrder(Math.round(color.r() * 255),
-                                         Math.round(color.g() * 255),
-                                         Math.round(color.b() * 255));
+      Math.round(color.g() * 255),
+      Math.round(color.b() * 255));
     let values = [0, 1].concat(new Array(currentBoard.neopixels).fill(orderedColors).flat());
     let packet = encodePacket(panelId, values);
     panels[panelId].characteristic.writeValue(packet)
-    .catch(error => {console.log(error);})
-    .then(_ => {});
+      .catch(error => { console.log(error); })
+      .then(_ => { });
   }
 
   function adjustColorOrder(red, green, blue) {
     // Add more as needed
-    switch(currentBoard.colorOrder) {
+    switch (currentBoard.colorOrder) {
       case 'GRB':
         return [green, red, blue];
       default:
@@ -914,16 +993,16 @@ function create3dPanel(panelId) {
   let canvas = panelTemplate.querySelector(".content canvas");
 
   // Make it visually fill the positioned parent
-  canvas.style.width ='100%';
-  canvas.style.height='100%';
+  canvas.style.width = '100%';
+  canvas.style.height = '100%';
   // ...then set the internal size to match
-  canvas.width  = canvas.offsetWidth;
+  canvas.width = canvas.offsetWidth;
   canvas.height = canvas.offsetHeight;
 
   // Create a 3D renderer and camera
-  panels[panelId].renderer = new THREE.WebGLRenderer({canvas});
+  panels[panelId].renderer = new THREE.WebGLRenderer({ canvas });
 
-  panels[panelId].camera = new THREE.PerspectiveCamera(45, canvas.width/canvas.height, 0.1, 100);
+  panels[panelId].camera = new THREE.PerspectiveCamera(45, canvas.width / canvas.height, 0.1, 100);
   panels[panelId].camera.position.set(0, -5, 30);
 
   // Set up the Scene
@@ -964,9 +1043,9 @@ function create3dPanel(panelId) {
     // compute a unit vector that points in the direction the camera is now
     // in the xz plane from the center of the box
     const direction = (new THREE.Vector3())
-        .subVectors(camera.position, boxCenter)
-        .multiply(new THREE.Vector3(1, 0, 1))
-        .normalize();
+      .subVectors(camera.position, boxCenter)
+      .multiply(new THREE.Vector3(1, 0, 1))
+      .normalize();
 
     // move the camera to a position distance units way from the center
     // in whatever direction the camera was from the center already
@@ -985,7 +1064,7 @@ function create3dPanel(panelId) {
 
   {
     const gltfLoader = new GLTFLoader();
-    gltfLoader.load('https://cdn.glitch.com/eeed3166-9759-4ba5-ba6b-aed272d6db80%2Fbunny.glb', (gltf) => {
+    gltfLoader.load('/assets/scene.gltf', (gltf) => {
       const root = gltf.scene;
       panels[panelId].model = root;
       panels[panelId].scene.add(root);
@@ -1020,7 +1099,7 @@ function update3dPanel(panelId) {
     panels[panelId].camera.updateProjectionMatrix();
   }
 
-  let quaternion = {w: 1, x: 0, y: 0, z:0};
+  let quaternion = { w: 1, x: 0, y: 0, z: 0 };
   Object.entries(panels[panelId].data).forEach(([field, item], index) => {
     if (panels[panelId].data[field].length > 0) {
       let value = panels[panelId].data[field].pop(); // Show only the last piece of data

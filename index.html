@@ -7,13 +7,15 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <script>
-    /*
+    // Redirect to HTTPS if HTTP is requested except for localhost. This is required for Web Bluetooth to work
+    if ((window.location.href.includes('127.0.0.1')) || (window.location.href.includes('localhost'))) {
+      console.log("Localhost detected, not redirecting to HTTPS");
+    }
+    else {
+      console.log("Redirecting to HTTPS");
+    }
 
-      // Redirect to HTTPS if HTTP is requested.
-      if (window.location.protocol === 'http:') {
-        window.location.href = 'https:' + window.location.href.substring(5);
-      }
-    */
+
   </script>
   <script type="importmap">
         {
@@ -64,8 +66,8 @@
     </div>
   </header>
   <main class="main">
-    <div id="notSupported" class="notSupported">
-      Sorry, <b>Web Bluetooth</b> is not supported on this device, make sure you're
+    <div id="notSupported" class="notSupported hidden">
+      Sorry, <b>Web Bluetooth</b> is not supported by this browser or device, make sure you're
       running Chrome 56 or later. If you are running linux, make sure you have enabled the
       <code>#enable-experimental-web-platform-features</code> flag in
       <code>chrome://flags</code>
@@ -118,6 +120,14 @@
     </div>
   </footer>
   <div id="templates">
+    <div class="gestures">
+      <div class="title">
+        title
+      </div>
+      <div class="content">
+        <canvas"></canvas>
+      </div>
+    </div>
     <div class="text">
       <div class="title">
         title
@@ -212,5 +222,4 @@
     </div>
   </div>
 </body>
-
 </html>
